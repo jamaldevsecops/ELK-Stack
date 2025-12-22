@@ -1,7 +1,4 @@
-# 🧱 Elasticsearch 3-Node Production Deployment Guide (Revised & Reviewed)
-
-This document is a **reviewed and corrected** version of your provided notes, converted into a **clean, production-grade Markdown guide** with **best practices applied**.
-
+# 🧱 Elasticsearch 3-Node Production Deployment Guide
 ---
 
 ## 🏗️ Architecture Overview (Production-Oriented)
@@ -63,6 +60,9 @@ sudo tee -a /etc/hosts << 'EOF'
 192.168.20.128 es3 es3.apsis.localnet
 EOF
 ```
+```bash
+cat /etc/hosts
+```
 
 ---
 
@@ -72,8 +72,9 @@ Elasticsearch ships with a **bundled JDK**.
 Install system Java only if required by policy.
 
 ```bash
-sudo apt-get update
-sudo apt-get install -y openjdk-21-jdk
+apt-cache search OpenJDK
+apt-cache search openjdk | grep openjdk-21
+sudo apt-get update && sudo apt install openjdk-21-jdk -y
 java --version
 ```
 
@@ -109,7 +110,8 @@ EOF
 | Kibana | 5601 |
 
 ```bash
-sudo ufw disable
+sudo ufw allow 9200/tcp
+sudo ufw allow 9300/tcp
 ```
 
 ---
@@ -123,8 +125,34 @@ wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch \
 echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://artifacts.elastic.co/packages/9.x/apt stable main" \
  | sudo tee /etc/apt/sources.list.d/elastic-9.x.list
 
+sudo chmod 644 /usr/share/keyrings/elasticsearch-keyring.gpg /etc/apt/sources.list.d/elastic-9.x.list
+
 sudo apt-get update
 sudo apt-get install -y elasticsearch
+```
+
+## 🔹 Alternative – Manually download the RPM & install packages
+```bash
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.1.3-amd64.deb
+wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-9.1.3-amd64.deb.sha512
+shasum -a 512 -c elasticsearch-9.1.3-amd64.deb.sha512
+sudo dpkg -i elasticsearch-9.1.3-amd64.deb
+```
+---
+
+## 🧮 JVM Heap Configuration
+
+Rule: **50% of RAM, max 31g**
+
+```bash
+cp /etc/elasticsearch/jvm.options /etc/elasticsearch/jvm.options.org
+vim /etc/elasticsearch/jvm.options
+```
+
+Example (8GB RAM- Half of tatal memory but < 31GB):
+```text
+-Xms4g
+-Xmx4g
 ```
 
 ---
@@ -138,23 +166,6 @@ sudo systemctl enable elasticsearch
 
 ---
 
-## 🧮 JVM Heap Configuration
-
-Rule: **50% of RAM, max 31g**
-
-```bash
-cp /etc/elasticsearch/jvm.options /etc/elasticsearch/jvm.options.org
-vim /etc/elasticsearch/jvm.options
-```
-
-Example (8GB RAM):
-```text
--Xms4g
--Xmx4g
-```
-
----
-
 ## 🎯 Summary
 
 ✔ Production-friendly architecture  
@@ -162,6 +173,3 @@ Example (8GB RAM):
 ✔ Clean install workflow  
 ✔ Ready for TLS + security hardening  
 
----
-
-📝 **Approved for internal documentation & audits**
