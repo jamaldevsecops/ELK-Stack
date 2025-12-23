@@ -1,6 +1,6 @@
-# 🚀 Elasticsearch APM Server Deployment Guide (Secure / Production)
+# 🚀 Elasticsearch APM Server Deployment Guide (Elastic 9.x – Secure / Production)
 
-This guide explains how to deploy **APM Server** in a **secured Elasticsearch + Kibana cluster** like yours.
+This guide describes how to deploy **APM Server** in an **Elastic 9.x secured cluster** using the **supported authentication model**.
 
 ---
 
@@ -10,27 +10,33 @@ This guide explains how to deploy **APM Server** in a **secured Elasticsearch + 
 Application → APM Agent → APM Server → Elasticsearch → Kibana (APM UI)
 ```
 
-✔ TLS everywhere  
-✔ No `elastic` user for services  
-✔ Uses **service account token** (best practice)
+✔ TLS on all layers  
+✔ Enrollment disabled (production best practice)  
+✔ Uses **apm_system** built-in user (Elastic 9.x supported)
 
 ---
 
 ## 🏗️ Recommended Deployment Model
 
-- ✅ Dedicated APM Server VM (preferred)
-- ⚠️ Optional: colocated with Kibana (only for small environments)
-- ❌ Do NOT install on Elasticsearch nodes (adds ingest pressure)
+- ✅ Dedicated APM Server VM (recommended)
+- ⚠️ Can be colocated with Kibana for small setups 
+- ❌ Do NOT deploy APM Server on Elasticsearch nodes (adds ingest pressure)
 
 ---
 
-## 🔐 Authentication Strategy
+## 🔐 Authentication Model (Important)
 
-| Component | Method |
-|---------|-------|
-| APM → Elasticsearch | Service Account Token |
+In **Elastic 9.x**, APM Server:
+
+- ❌ Does NOT support service account tokens
+- ✅ Uses the built-in **`apm_system`** user
+- ❌ Must NOT use `elastic` user
+
+| Component | Auth Method |
+|--------|------------|
+| APM → Elasticsearch | `apm_system` user |
 | APM → Kibana | HTTPS + CA trust |
-| Apps → APM | Token / agent based |
+| Apps → APM | Agent-based |
 
 ---
 
@@ -63,15 +69,16 @@ chmod 640 /etc/apm-server/elasticsearch-ca.crt
 
 ---
 
-## 🔑 Step 3: Create APM Service Token (on ES node)
+## 🔑 Step 3: Reset `apm_system` Password (on ES node)
 
 ```bash
-/usr/share/elasticsearch/bin/elasticsearch-service-tokens create elastic/apm apm-server
+/usr/share/elasticsearch/bin/elasticsearch-reset-password -u apm_system
 ```
 
-Example output:
+Example:
 ```
-SERVICE_TOKEN elastic/apm/apm-server = AAEAAWVsYXN0aWMv...
+Password for the [apm_system] user successfully reset.
+New value: ********
 ```
 
 ---
@@ -85,13 +92,28 @@ apm-server:
   host: "0.0.0.0:8200"
 
 output.elasticsearch:
-  hosts: ["https://es1:9200", "https://es2:9200", "https://es3:9200"]
-  service_token: "PASTE_TOKEN_HERE"
-  ssl.certificate_authorities: ["/etc/apm-server/elasticsearch-ca.crt"]
+  hosts:
+    - "https://es1:9200"
+    - "https://es2:9200"
+    - "https://es3:9200"
+  username: "apm_system"
+  password: "PASTE_PASSWORD_HERE"
+  ssl.certificate_authorities:
+    - "/etc/apm-server/elasticsearch-ca.crt"
 
 setup.kibana:
   host: "https://192.168.20.128:5601"
-  ssl.certificate_authorities: ["/etc/apm-server/elasticsearch-ca.crt"]
+  ssl.certificate_authorities:
+    - "/etc/apm-server/elasticsearch-ca.crt"
+```
+
+---
+
+## 🔐 File Permissions
+
+```bash
+chown root:apm-server /etc/apm-server/apm-server.yml
+chmod 640 /etc/apm-server/apm-server.yml
 ```
 
 ---
@@ -99,51 +121,33 @@ setup.kibana:
 ## ▶️ Step 5: Enable & Start APM Server
 
 ```bash
-sudo systemctl daemon-reexec
-sudo systemctl enable apm-server
-sudo systemctl start apm-server
-```
-
-Check status:
-```bash
-sudo systemctl status apm-server
+systemctl daemon-reexec
+systemctl enable apm-server
+systemctl restart apm-server
 ```
 
 ---
 
 ## ✅ Step 6: Verification
 
-### From APM Server
 ```bash
 curl -k https://localhost:8200/
-```
-
-Expected:
-```json
-{
-  "version": "9.x.x"
-}
-```
-
-### From Elasticsearch
-```bash
 curl -u elastic https://es1:9200/_cat/indices/apm*?v
 ```
 
-### From Kibana
+Kibana:
 ```
 Observability → APM → Waiting for data
 ```
 
 ---
 
-## 🧪 Step 7: App Instrumentation (Example)
+## 🧪 Step 7: Instrument Applications (Example)
 
 ### Java
 ```bash
 -javaagent:/opt/elastic-apm-agent.jar
 -Delastic.apm.server_urls=http://apm-server:8200
--Delastic.apm.service_name=my-app
 ```
 
 ### Node.js
@@ -155,21 +159,20 @@ export ELASTIC_APM_SERVER_URL=http://apm-server:8200
 
 ## 🟢 Best Practices
 
-✔ Use service tokens (no passwords)  
-✔ Dedicated APM Server  
+✔ Enrollment disabled  
+✔ apm_system user only  
 ✔ TLS everywhere  
-✔ Monitor APM with Metricbeat  
-✔ Control sampling in production  
+✔ Dedicated APM Server  
 
 ---
 
 ## 🎯 Next Steps
 
-- Enable APM alerts
-- Tune sampling & retention
-- Add RUM (browser APM)
+- Enable alerts
+- Tune sampling
+- Add RUM
 - Kubernetes APM
 
 ---
-
-✅ Your APM Server is now production-ready.
+Nex: []()  
+Prev: []()  
