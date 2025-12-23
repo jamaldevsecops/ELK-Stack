@@ -1,7 +1,5 @@
 # 🔗 Kibana Configuration & Elasticsearch Integration Guide
 
-<img width="1646" height="689" alt="image" src="https://github.com/user-attachments/assets/21af4cf6-cf29-42a4-8477-86eded0ab6e9" />
-
 This document explains how to **configure Kibana**, **integrate it securely with Elasticsearch**, and follow **best practices for users**.
 
 ---
@@ -62,6 +60,11 @@ curl -u elastic -X POST https://es1:9200/_security/user/kibana_admin -H "Content
 ---
 
 ## ⚙️ 2. Configure `kibana.yml`
+
+Create Kibana Encryption Keys: 
+```
+openssl rand -base64 48
+```
 
 ```yaml
 # =================== System: Kibana Server ===================
@@ -182,6 +185,7 @@ Expected:
 ```
 Kibana is now available at http://<host>:5601
 ```
+<img width="1646" height="689" alt="image" src="https://github.com/user-attachments/assets/21af4cf6-cf29-42a4-8477-86eded0ab6e9" />
 
 ---
 
