@@ -46,7 +46,8 @@ echo "deb [signed-by=/usr/share/keyrings/elasticsearch-keyring.gpg] https://arti
 sudo chmod 644 /usr/share/keyrings/elasticsearch-keyring.gpg /etc/apt/sources.list.d/elastic-9.x.list
 
 sudo apt-get update
-sudo apt install apm-server -y
+sudo apt list apm-server -a 
+sudo apt install apm-server=9.2.3 -y
 ```
 
 ---
