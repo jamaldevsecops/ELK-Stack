@@ -20,7 +20,7 @@ Application → APM Agent → APM Server → Elasticsearch → Kibana (APM UI)
 
 - ✅ Dedicated APM Server VM (preferred)
 - ⚠️ Optional: colocated with Kibana (only for small environments)
-- ❌ Do NOT install on Elasticsearch nodes
+- ❌ Do NOT install on Elasticsearch nodes (adds ingest pressure)
 
 ---
 
