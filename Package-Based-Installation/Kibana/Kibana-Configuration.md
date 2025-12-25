@@ -62,7 +62,8 @@ curl -u elastic -X POST https://es1:9200/_security/user/kibana_admin -H "Content
 ## 🔐 2. Generate Kibana TLS certificate
 ### 📁 Create cert directory
   ```bash
-  mkdir -p /etc/kibana/certs
+  mkdir -p /etc/kibana/certs/ca
+  scp root@es1:/etc/elasticsearch/certs/ca/* /etc/kibana/certs/ca/
   cd /etc/kibana/certs
   ```
 ### 📝 Create OpenSSL config for Kibana
@@ -89,24 +90,24 @@ curl -u elastic -X POST https://es1:9200/_security/user/kibana_admin -H "Content
   ```
 ### 🔐 Generate private key
 ```bash
-openssl genrsa -out kibana.key 4096
+  openssl genrsa -out kibana.key 4096
 ```
 ### 📜 Generate CSR
 ```bash
-openssl req -new -key kibana.key -out kibana.csr -config kibana-openssl.cnf
+  openssl req -new -key kibana.key -out kibana.csr -config kibana-openssl.cnf
 ```
 ### 🏷️ Sign with your existing CA
 ```bash
-openssl x509 -req \
-  -in kibana.csr \
-  -CA /etc/elasticsearch/certs/ca/ca.crt \
-  -CAkey /etc/elasticsearch/certs/ca/ca.key \
-  -CAcreateserial -out kibana.crt -days 825 -sha512 -extensions v3_req -extfile kibana-openssl.cnf
+  openssl x509 -req \
+    -in kibana.csr \
+    -CA /etc/kibana/certs/ca/ca.crt \
+    -CAkey /etc/kibana/certs/ca/ca.key \
+    -CAcreateserial -out kibana.crt -days 825 -sha512 -extensions v3_req -extfile kibana-openssl.cnf
 ```
 ```bash
-chown -R root:kibana /etc/kibana/certs
-chmod 750 /etc/kibana/certs
-chmod 640 /etc/kibana/certs/kibana.*
+  chown -R root:kibana /etc/kibana/certs
+  chmod 750 /etc/kibana/certs
+  chmod 640 /etc/kibana/certs/kibana.*
 ```
 ## ⚙️ 3. Configure `kibana.yml`
 
