@@ -132,13 +132,6 @@ logging.files:
   name: apm-server
   keepfiles: 7
   permissions: 0600
-
-############################ HTTP Endpoint ############################
-
-#http:
-  #enabled: true
-  #host: "192.168.20.129"
-  #port: 8200
 ```
 
 ---
@@ -159,54 +152,6 @@ systemctl daemon-reexec
 systemctl enable apm-server
 systemctl restart apm-server
 ```
-
----
-
-## ✅ Step 6: Verification
-
-```bash
-curl -k https://localhost:8200/
-curl -u elastic https://es1:9200/_cat/indices/apm*?v
-```
-
-Kibana:
-```
-Observability → APM → Waiting for data
-```
-
----
-
-## 🧪 Step 7: Instrument Applications (Example)
-
-### Java
-```bash
--javaagent:/opt/elastic-apm-agent.jar
--Delastic.apm.server_urls=http://apm-server:8200
-```
-
-### Node.js
-```bash
-export ELASTIC_APM_SERVER_URL=http://apm-server:8200
-```
-
----
-
-## 🟢 Best Practices
-
-✔ Enrollment disabled  
-✔ apm_system user only  
-✔ TLS everywhere  
-✔ Dedicated APM Server  
-
----
-
-## 🎯 Next Steps
-
-- Enable alerts
-- Tune sampling
-- Add RUM
-- Kubernetes APM
-
 ---
 Nex: []()  
 Prev: []()  
