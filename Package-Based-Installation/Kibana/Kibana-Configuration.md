@@ -59,7 +59,56 @@ curl -u elastic -X POST https://es1:9200/_security/user/kibana_admin -H "Content
 
 ---
 
-## ⚙️ 2. Configure `kibana.yml`
+## 🔐 2. Generate Kibana TLS certificate
+### 📁 Create cert directory
+  ```bash
+  mkdir -p /etc/kibana/certs
+  cd /etc/kibana/certs
+  ```
+### 📝 Create OpenSSL config for Kibana
+  ```bash
+  cat > kibana-openssl.cnf << 'EOF'
+  [ req ]
+  distinguished_name = req_distinguished_name
+  req_extensions = v3_req
+  prompt = no
+  
+  [ req_distinguished_name ]
+  CN = kibana
+  
+  [ v3_req ]
+  keyUsage = digitalSignature, keyEncipherment
+  extendedKeyUsage = serverAuth
+  subjectAltName = @alt_names
+  
+  [ alt_names ]
+  DNS.1 = kibana
+  DNS.2 = kibana.apsis.localnet
+  IP.1  = 192.168.20.150
+  EOF
+  ```
+### 🔐 Generate private key
+```bash
+openssl genrsa -out kibana.key 4096
+```
+### 📜 Generate CSR
+```bash
+openssl req -new -key kibana.key -out kibana.csr -config kibana-openssl.cnf
+```
+### 🏷️ Sign with your existing CA
+```bash
+openssl x509 -req \
+  -in kibana.csr \
+  -CA /etc/elasticsearch/certs/ca/ca.crt \
+  -CAkey /etc/elasticsearch/certs/ca/ca.key \
+  -CAcreateserial -out kibana.crt -days 825 -sha512 -extensions v3_req -extfile kibana-openssl.cnf
+```
+```bash
+chown -R root:kibana /etc/kibana/certs
+chmod 750 /etc/kibana/certs
+chmod 640 /etc/kibana/certs/kibana.*
+```
+## ⚙️ 3. Configure `kibana.yml`
 
 Create Kibana Encryption Keys: 
 ```
@@ -73,14 +122,14 @@ server.host: "192.168.20.128"
 
 #server.basePath: ""
 #server.rewriteBasePath: false
-server.publicBaseUrl: "http://192.168.20.128:5601"
+server.publicBaseUrl: "https://192.168.20.128:5601"
 #server.maxPayload: 1048576
 server.name: "NGD-Kibana"
 
 # =================== System: Kibana Server (Optional) ===================
-#server.ssl.enabled: false
-#server.ssl.certificate: /path/to/your/server.crt
-#server.ssl.key: /path/to/your/server.key
+server.ssl.enabled: true
+server.ssl.certificate: /etc/kibana/certs/kibana.crt
+server.ssl.key: /etc/kibana/certs/kibana.key
 
 # =================== System: Elasticsearch ===================
 elasticsearch.hosts: ["https://es1:9200", "https://es2:9200", "https://es3:9200"]
@@ -174,7 +223,7 @@ xpack.reporting.encryptionKey: "NyuH/OBP7ABpyLL3dfhp29SEKBhTeE9yam8E6O0Rt4ljmxZo
 
 ---
 
-## 🔑 3. Restart Kibana
+## 🔑 4. Restart Kibana
 
 ```bash
 sudo systemctl restart kibana
@@ -189,28 +238,13 @@ Kibana is now available at http://<host>:5601
 
 ---
 
-## 🌐 4. Log in to Kibana
+## 🌐 5. Log in to Kibana
 
 🔑 **Admin login**
 ```
 Username: kibana_admin
 Password: STRONG_PASSWORD
 ```
-
-🛑 Do NOT use:
-```
-kibana / <password>
-```
-
----
-
-## 🟢 Verification Checklist
-
-✔ Kibana UI loads  
-✔ No TLS warnings  
-✔ Saved objects persist after restart  
-✔ Elasticsearch cluster visible  
-
 ---
 Next: []()  
 Prev: []()  
