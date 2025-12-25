@@ -108,6 +108,7 @@ curl -u elastic -X POST https://es1:9200/_security/user/kibana_admin -H "Content
   chown -R root:kibana /etc/kibana/certs
   chmod 750 /etc/kibana/certs
   chmod 640 /etc/kibana/certs/kibana.*
+  rm -rf /etc/kibana/certs/ca/ca.key
 ```
 ## ⚙️ 3. Configure `kibana.yml`
 
