@@ -82,10 +82,10 @@ cd /etc/apm-server/certs/apm
 cat > apm-openssl.cnf <<EOF
 [ req ]
 prompt = no
-distinguished_name = dn
+distinguished_name = req_distinguished_name
 req_extensions = v3_req
 
-[ dn ]
+[ req_distinguished_name ]
 CN = apm-server
 
 [ v3_req ]
@@ -95,22 +95,28 @@ subjectAltName = @alt_names
 
 [ alt_names ]
 DNS.1 = apm-server
-DNS.2 = es2
-DNS.3 = es2.apsis.localnet
-IP.1  = 192.168.20.129
+DNS.2 = apm
+DNS.3 = apm.apsis.localnet
+IP.1  = 192.168.20.131
 EOF
 ```
 
-### Generate key and certificate
+### 🔑 Generate key + CSR
 ```bash
 openssl genrsa -out apm-server.key 4096
-
-openssl req -new -key apm-server.key   -out apm-server.csr   -config apm-openssl.cnf
-
-openssl x509 -req -in apm-server.csr   -CA /etc/apm-server/certs/ca/ca.crt   -CAkey /etc/apm-server/certs/ca/ca.key   -CAcreateserial   -out apm-server.crt   -days 825 -sha256   -extensions v3_req   -extfile apm-openssl.cnf
+openssl req -new -key apm-server.key -out apm-server.csr -config apm-openssl.cnf
+```
+### 🖊️ Sign CSR with CA
+```bash
+scp root@es1:/etc/elasticsearch/certs/ca/ca.key /etc/apm-server/certs/ca/ca.key
+openssl x509 -req -in apm-server.csr \
+  -CA /etc/apm-server/certs/ca/ca.crt \
+  -CAkey /etc/apm-server/certs/ca/ca.key \
+  -CAcreateserial -out apm-server.crt -days 825 -sha256 -extensions v3_req -extfile apm-openssl.cnf
 ```
 
 ```bash
+rm -f /etc/apm-server/certs/ca/ca.key
 chown apm-server:apm-server apm-server.*
 chmod 600 apm-server.key
 chmod 644 apm-server.crt
@@ -145,7 +151,7 @@ apm-server:
 output.elasticsearch:
   hosts: ["https://es1:9200", "https://es2:9200", "https://es3:9200"]
   username: "apm_system"
-  password: "<APM_SYSTEM_PASSWORD>"
+  password: "-bvGTYUB-OZaFt7tCSjd"
   ssl:
     enabled: true
     verification_mode: full
@@ -188,11 +194,7 @@ systemctl status apm-server
 ```bash
 curl --cacert /etc/apm-server/certs/ca/ca.crt https://192.168.20.129:8200/
 ```
-
-✔ HTTPS reachable  
-✔ No certificate errors
-
 ---
 
-**Next:** ILM tuning for APM indices  
-**Prev:** Kibana integration
+**Next:** []()    
+**Prev:** []()
