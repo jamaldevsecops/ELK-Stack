@@ -155,7 +155,7 @@ elasticsearch.password: "H4PYrdDPLo18HttdJ1z9"
 # =================== System: Elasticsearch (Optional) ===================
 #elasticsearch.ssl.certificate: /path/to/your/client.crt
 #elasticsearch.ssl.key: /path/to/your/client.key
-elasticsearch.ssl.certificateAuthorities: [ "/etc/kibana/certs/elasticsearch-ca.crt" ]
+elasticsearch.ssl.certificateAuthorities: [ "/etc/kibana/certs/ca/ca.crt" ]
 elasticsearch.ssl.verificationMode: full
 
 # =================== System: Logging ===================
