@@ -1,5 +1,4 @@
-# 🚀 Elasticsearch APM Server Deployment Guide (Elastic 9.x – Secure / Production)
-
+# 🚀 Elasticsearch APM Server Deployment Guide (Elastic 9.x)
 This guide describes how to deploy **APM Server** in an **Elastic 9.x secured cluster** using the **supported authentication model** and **HTTPS-enabled APM intake**.
 
 ---
