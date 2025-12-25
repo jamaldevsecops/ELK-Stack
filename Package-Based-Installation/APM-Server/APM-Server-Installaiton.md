@@ -185,14 +185,6 @@ systemctl enable apm-server
 systemctl restart apm-server
 systemctl status apm-server
 ```
-
----
-
-## ✅ Verification
-
-```bash
-curl --cacert /etc/apm-server/certs/ca/ca.crt https://192.168.20.129:8200/
-```
 ---
 
 **Next:** []()    
