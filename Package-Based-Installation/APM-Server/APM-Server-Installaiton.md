@@ -61,7 +61,8 @@ sudo apt install apm-server=9.2.3 -y
 ## 🔐 Step 2: Trust Elasticsearch CA
 
 ```bash
-scp es1:/etc/elasticsearch/certs/ca/ca.crt /etc/apm-server/elasticsearch-ca.crt
+mkdir /etc/apm-server/certs/ca -p
+scp root@es1:/etc/elasticsearch/certs/ca/ca.crt /etc/apm-server/certs/ca/ca.crt
 
 chown root:apm-server /etc/apm-server/elasticsearch-ca.crt
 chmod 640 /etc/apm-server/elasticsearch-ca.crt
@@ -88,23 +89,56 @@ New value: ********
 Edit `/etc/apm-server/apm-server.yml`
 
 ```yaml
+######################### APM Server Configuration #########################
+
+################################ APM Server ################################
 apm-server:
-  host: "0.0.0.0:8200"
+  host: "192.168.20.129:8200"
+  auth:
+    api_key:
+      enabled: true
+      limit: 100
+
+  max_event_size: 307200
+
+################################ Outputs ###################################
 
 output.elasticsearch:
-  hosts:
-    - "https://es1:9200"
-    - "https://es2:9200"
-    - "https://es3:9200"
+  hosts: ["https://es1:9200", "https://es2:9200", "https://es3:9200"]
+  #api_key: "ID:API_KEY"
   username: "apm_system"
-  password: "PASTE_PASSWORD_HERE"
-  ssl.certificate_authorities:
-    - "/etc/apm-server/elasticsearch-ca.crt"
-
-setup.kibana:
+  password: "-bvGTYUB-OZaFt7tCSjd"
+  ssl:
+    enabled: true
+    verification_mode: full
+    certificate_authorities: ["/etc/apm-server/certs/ca/ca.crt"]
+  worker: 2
+  bulk_max_size: 4096
+####################### APM Server - Agent Configuration #####################
+kibana:
+  enabled: true
   host: "https://192.168.20.128:5601"
-  ssl.certificate_authorities:
-    - "/etc/apm-server/elasticsearch-ca.crt"
+  ssl:
+    enabled: true
+    verification_mode: full
+    certificate_authorities:
+      - "/etc/apm-server/certs/ca/ca.crt"
+################################ Logging ###################################
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/apm-server
+  name: apm-server
+  keepfiles: 7
+  permissions: 0600
+
+############################ HTTP Endpoint ############################
+
+#http:
+  #enabled: true
+  #host: "192.168.20.129"
+  #port: 8200
 ```
 
 ---
