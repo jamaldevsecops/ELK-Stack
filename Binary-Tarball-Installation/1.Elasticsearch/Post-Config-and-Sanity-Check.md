@@ -47,6 +47,7 @@ curl -u elastic https://es1:9200/_cat/nodes?v
 ```
 
 Validate:
+<img width="694" height="94" alt="image" src="https://github.com/user-attachments/assets/5b3c04a6-b217-44b1-8710-12d2a0190a36" />
 
 * All expected nodes are listed
 * Node roles are correct (`m`, `dim`, etc.)
@@ -61,6 +62,7 @@ curl -u elastic https://es1:9200/_cluster/health?pretty
 ```
 
 ### ✅ Expected Output
+<img width="629" height="275" alt="image" src="https://github.com/user-attachments/assets/6a62bdcb-66a0-47a3-a81e-522602eb8324" />
 
 ```json
 "status" : "green",
