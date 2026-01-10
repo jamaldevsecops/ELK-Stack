@@ -45,9 +45,8 @@ Verify that all nodes have joined correctly.
 ```bash
 curl -u elastic https://es1:9200/_cat/nodes?v
 ```
-
-Validate:
 <img width="694" height="94" alt="image" src="https://github.com/user-attachments/assets/5b3c04a6-b217-44b1-8710-12d2a0190a36" />
+Validate:
 
 * All expected nodes are listed
 * Node roles are correct (`m`, `dim`, etc.)
